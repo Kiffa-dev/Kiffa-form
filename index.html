@@ -274,7 +274,7 @@ input.err, select.err { border-color: var(--red) !important; }
     <ol>
       <li>افتح <a href="https://sheets.new" target="_blank">sheets.new</a> وأنشئ ملف جديد.</li>
       <li>أضف الترويسات التالية في السطر الأول:<br>
-        <code>التاريخ والوقت | الاسم | الجوال | الفرع | TikTok | Instagram | Snapchat | المسموح به | الإقرار | التوقيع</code>
+        <code>التاريخ والوقت | الاسم | الجوال | TikTok | Instagram | Snapchat | المسموح به | التوقيع</code>
       </li>
       <li>من القائمة اختر <strong>Extensions ← Apps Script</strong>.</li>
       <li>احذف الكود الافتراضي والصق الكود التالي:</li>
@@ -290,12 +290,10 @@ function doPost(e) {
       data.dateTime || new Date().toLocaleString('ar-SA'),
       data.fname    || "",
       data.phone    || "",
-      data.branch   || "",
       data.tiktok   || "",
       data.insta    || "",
       data.snap     || "",
       data.allowed  || "",
-      data.pledge   || "",
       data.sig      || ""
     ]);
     return ContentService
@@ -359,7 +357,7 @@ function togglePledge() {
 }
 
 function updatePg() {
-  var ids = ['fname', 'phone', 'branch', 'sig'];
+  var ids = ['fname', 'phone', 'sig'];
   var n   = ids.filter(function(id) {
     var el = document.getElementById(id);
     return el && el.value.trim();
@@ -376,8 +374,7 @@ function updatePg() {
   }
 });
 
-var branchEl = document.getElementById('branch');
-if (branchEl) branchEl.addEventListener('change', updatePg);
+
 
 function validate() {
   var ok = true;
@@ -443,7 +440,6 @@ document.getElementById('kForm').addEventListener('submit', function(e) {
   var payload = {
     fname:    document.getElementById('fname').value.trim(),
     phone:    document.getElementById('phone').value.trim(),
-    branch:   document.getElementById('branch').value,
     tiktok:   document.getElementById('tiktok').value.trim() || '—',
     insta:    document.getElementById('insta').value.trim()  || '—',
     snap:     document.getElementById('snap').value.trim()   || '—',
@@ -453,32 +449,21 @@ document.getElementById('kForm').addEventListener('submit', function(e) {
     dateTime: dateTime
   };
 
-  // أظهر overlay
-  document.getElementById('overlay').classList.add('show');
-  document.getElementById('submitBtn').disabled = true;
-
+  // أرسل البيانات في الخلفية
   fetch(SCRIPT_URL, {
     method:  'POST',
     mode:    'no-cors',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify(payload)
-  })
-  .then(function() {
-    // no-cors → نفترض النجاح إذا وصل الطلب
-    document.getElementById('overlay').classList.remove('show');
-    document.getElementById('kForm').style.display   = 'none';
-    document.getElementById('successSc').style.display = 'block';
-    document.getElementById('pg').style.width = '100%';
-    document.getElementById('successMeta').textContent =
-      'تم التسجيل بتاريخ: ' + dateTime + ' — ' + payload.branch;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  })
-  .catch(function() {
-    document.getElementById('overlay').classList.remove('show');
-    document.getElementById('submitBtn').disabled = false;
-    document.getElementById('errBanner').style.display = 'block';
-    document.getElementById('errBanner').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
+
+  // أظهر شاشة النجاح فوراً بدون انتظار الرد
+  document.getElementById('kForm').style.display    = 'none';
+  document.getElementById('successSc').style.display = 'block';
+  document.getElementById('pg').style.width = '100%';
+  document.getElementById('successMeta').textContent =
+    'تم التسجيل بتاريخ: ' + dateTime;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 </script>
 </body>
