@@ -265,6 +265,75 @@ input.err, select.err { border-color: var(--red) !important; }
   <p class="success-meta" id="successMeta"></p>
 </div>
 
+<!-- ===== دليل إعداد Google Sheet ===== -->
+<div class="form-wrap" style="padding-top:0">
+<details class="setup-guide">
+  <summary>&#x2699;&#xFE0F; دليل ربط النموذج بـ Google Sheet (للمسؤول فقط)</summary>
+  <div class="setup-body">
+    <h3>الخطوات</h3>
+    <ol>
+      <li>افتح <a href="https://sheets.new" target="_blank">sheets.new</a> وأنشئ ملف جديد.</li>
+      <li>أضف الترويسات التالية في السطر الأول:<br>
+        <code>التاريخ والوقت | الاسم | الجوال | الفرع | TikTok | Instagram | Snapchat | المسموح به | الإقرار | التوقيع</code>
+      </li>
+      <li>من القائمة اختر <strong>Extensions ← Apps Script</strong>.</li>
+      <li>احذف الكود الافتراضي والصق الكود التالي:</li>
+    </ol>
+    <pre class="code-block">const SHEET_NAME = "Sheet1"; // اسم ورقة العمل
+
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var sheet = SpreadsheetApp.getActiveSpreadsheet()
+                              .getSheetByName(SHEET_NAME);
+    sheet.appendRow([
+      data.dateTime || new Date().toLocaleString('ar-SA'),
+      data.fname    || "",
+      data.phone    || "",
+      data.branch   || "",
+      data.tiktok   || "",
+      data.insta    || "",
+      data.snap     || "",
+      data.allowed  || "",
+      data.pledge   || "",
+      data.sig      || ""
+    ]);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "ok" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+    <ol start="5">
+      <li>اضغط <strong>Deploy ← New deployment</strong>.</li>
+      <li>اختر نوع النشر: <strong>Web app</strong>.</li>
+      <li>في <em>Execute as</em> اختر <strong>Me</strong>، وفي <em>Who has access</em> اختر <strong>Anyone</strong>.</li>
+      <li>اضغط <strong>Deploy</strong> ثم انسخ الـ URL الناتج.</li>
+      <li>في كود هذه الصفحة ضع الرابط في متغير <code>SCRIPT_URL</code> أعلى JavaScript.</li>
+    </ol>
+    <p class="setup-note">&#x2705; بعد هذه الخطوات، كل إقرار جديد سيُضاف تلقائياً كسطر جديد في الـ Sheet.</p>
+  </div>
+</details>
+</div>
+
+<style>
+.setup-guide { background:var(--white); border:1.5px solid var(--border); border-radius:var(--radius); margin-bottom:20px; box-shadow:var(--shadow); overflow:hidden; }
+.setup-guide summary { padding:16px 20px; font-size:14px; font-weight:600; color:var(--dark-soft); cursor:pointer; user-select:none; list-style:none; }
+.setup-guide summary::-webkit-details-marker { display:none; }
+.setup-guide[open] summary { border-bottom:1px solid var(--border); color:var(--teal-mid); }
+.setup-body { padding:20px 22px; font-size:13.5px; color:var(--dark-soft); line-height:1.9; direction:rtl; }
+.setup-body h3 { font-size:14px; font-weight:700; color:var(--dark); margin-bottom:10px; }
+.setup-body ol { padding-right:20px; margin-bottom:14px; }
+.setup-body li { margin-bottom:8px; }
+.setup-body a { color:var(--teal-mid); text-decoration:underline; }
+.setup-body code { background:var(--light-gray); border:1px solid var(--border); border-radius:4px; padding:2px 6px; font-size:12px; font-family:monospace; direction:ltr; display:inline-block; }
+.code-block { background:#1e1e2e; color:#cdd6f4; border-radius:var(--radius-sm); padding:16px 18px; font-size:12px; font-family:monospace; direction:ltr; text-align:left; overflow-x:auto; white-space:pre; margin:12px 0; line-height:1.7; }
+.setup-note { background:var(--teal-light); border:1.5px solid rgba(92,196,185,.3); border-right:4px solid var(--teal); border-radius:var(--radius-sm); padding:12px 16px; font-size:13px; color:var(--dark-soft); margin-top:10px; }
+</style>
+
 <div class="footer">وثيقة داخلية خاصة بموظفي كِفّة — جميع الحقوق محفوظة ©2026</div>
 </div>
 
@@ -272,7 +341,7 @@ input.err, select.err { border-color: var(--red) !important; }
 // ============================================================
 // ضع رابط Apps Script هنا بعد النشر
 // ============================================================
-var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbA9SGC4Gl6v6dUr-AreQQSyKZD3QFmCQS3isyA34R7ACEd0opio8cBNwA3tHhDguc_A/exec"
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbA9SGC4Gl6v6dUr-AreQQSyKZD3QFmCQS3isyA34R7ACEd0opio8cBNwA3tHhDguc_A/exec";
 // ============================================================
 
 function toggleChk(lbl) {
@@ -281,102 +350,134 @@ function toggleChk(lbl) {
   lbl.classList.toggle('checked', cb.checked);
   updatePg();
 }
+
 function togglePledge() {
   var box = document.getElementById('pledgeBox');
   var cb  = document.getElementById('pledgeCb');
   box.classList.toggle('checked', cb.checked);
   updatePg();
 }
+
 function updatePg() {
-  var ids = ['fname','phone','branch','sig'];
-  var n   = ids.filter(function(id){ return document.getElementById(id).value.trim(); }).length;
-  var p   = document.getElementById('pledgeCb').checked ? 1 : 0;
-  document.getElementById('pg').style.width = Math.round((n+p)/(ids.length+1)*100) + '%';
+  var ids = ['fname', 'phone', 'branch', 'sig'];
+  var n   = ids.filter(function(id) {
+    var el = document.getElementById(id);
+    return el && el.value.trim();
+  }).length;
+  var p = document.getElementById('pledgeCb').checked ? 1 : 0;
+  document.getElementById('pg').style.width = Math.round((n + p) / (ids.length + 1) * 100) + '%';
 }
-['fname','phone','sig'].forEach(function(id) {
-  document.getElementById(id).addEventListener('input', updatePg);
-  document.getElementById(id).addEventListener('change', updatePg);
+
+['fname', 'phone', 'sig'].forEach(function(id) {
+  var el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', updatePg);
+    el.addEventListener('change', updatePg);
+  }
 });
+
+var branchEl = document.getElementById('branch');
+if (branchEl) branchEl.addEventListener('change', updatePg);
 
 function validate() {
   var ok = true;
-  ['fname','branch','sig'].forEach(function(id) {
-    var el = document.getElementById(id), err = document.getElementById('e-'+id);
-    if (!el.value.trim()) { el.classList.add('err'); err.style.display='block'; ok=false; }
-    else { el.classList.remove('err'); err.style.display='none'; }
+  ['fname', 'sig'].forEach(function(id) {
+    var el  = document.getElementById(id);
+    var err = document.getElementById('e-' + id);
+    if (!el.value.trim()) {
+      el.classList.add('err');
+      if (err) err.style.display = 'block';
+      ok = false;
+    } else {
+      el.classList.remove('err');
+      if (err) err.style.display = 'none';
+    }
   });
-  var ph = document.getElementById('phone'), phE = document.getElementById('e-phone');
+  var ph  = document.getElementById('phone');
+  var phE = document.getElementById('e-phone');
   if (!ph.value.trim() || !/^05\d{8}$/.test(ph.value.trim())) {
-    ph.classList.add('err'); phE.style.display='block'; ok=false;
-  } else { ph.classList.remove('err'); phE.style.display='none'; }
-  var cb = document.getElementById('pledgeCb'), pe = document.getElementById('e-pledge');
-  if (!cb.checked) { pe.style.display='block'; ok=false; }
-  else { pe.style.display='none'; }
+    ph.classList.add('err');
+    if (phE) phE.style.display = 'block';
+    ok = false;
+  } else {
+    ph.classList.remove('err');
+    if (phE) phE.style.display = 'none';
+  }
+  var cb = document.getElementById('pledgeCb');
+  var pe = document.getElementById('e-pledge');
+  if (!cb.checked) {
+    if (pe) pe.style.display = 'block';
+    ok = false;
+  } else {
+    if (pe) pe.style.display = 'none';
+  }
   return ok;
 }
 
 function getChecked(name) {
-  return Array.from(document.querySelectorAll('input[name="'+name+'"]:checked'))
-    .map(function(cb){ return cb.value; }).join('، ') || 'لا شيء محدد';
+  return Array.from(document.querySelectorAll('input[name="' + name + '"]:checked'))
+    .map(function(cb) { return cb.value; })
+    .join('، ') || 'لا شيء محدد';
+}
+
+// تنسيق التاريخ والوقت بالعربية
+function getArabicDateTime() {
+  var now  = new Date();
+  var date = now.toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+  var time = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+  return date + ' — ' + time;
 }
 
 document.getElementById('kForm').addEventListener('submit', function(e) {
   e.preventDefault();
   document.getElementById('errBanner').style.display = 'none';
+
   if (!validate()) {
     var firstErr = document.querySelector('.err');
-    if (firstErr) firstErr.scrollIntoView({behavior:'smooth',block:'center'});
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
+  var dateTime = getArabicDateTime();
+
   var payload = {
-    fname:   document.getElementById('fname').value.trim(),
-    phone:   document.getElementById('phone').value.trim(),
-    branch:  document.getElementById('branch').value,
-    tiktok:  document.getElementById('tiktok').value.trim() || '—',
-    insta:   document.getElementById('insta').value.trim()  || '—',
-    snap:    document.getElementById('snap').value.trim()   || '—',
-    allowed: getChecked('allow'),
-    pledge:  'أقر وأتعهد',
-    sig:     document.getElementById('sig').value.trim()
+    fname:    document.getElementById('fname').value.trim(),
+    phone:    document.getElementById('phone').value.trim(),
+    branch:   document.getElementById('branch').value,
+    tiktok:   document.getElementById('tiktok').value.trim() || '—',
+    insta:    document.getElementById('insta').value.trim()  || '—',
+    snap:     document.getElementById('snap').value.trim()   || '—',
+    allowed:  getChecked('allow'),
+    pledge:   'أقر وأتعهد',
+    sig:      document.getElementById('sig').value.trim(),
+    dateTime: dateTime
   };
 
   // أظهر overlay
   document.getElementById('overlay').classList.add('show');
   document.getElementById('submitBtn').disabled = true;
 
-fetch(SCRIPT_URL, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(payload)
-})
-.then(response => response.json())
-.then(data => {
-  console.log(data);
-  alert("تم الإرسال بنجاح");
-})
-.catch(error => {
-  console.error(error);
-  alert("حدث خطأ");
-});
+  fetch(SCRIPT_URL, {
+    method:  'POST',
+    mode:    'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(payload)
+  })
   .then(function() {
     // no-cors → نفترض النجاح إذا وصل الطلب
     document.getElementById('overlay').classList.remove('show');
-    document.getElementById('kForm').style.display = 'none';
+    document.getElementById('kForm').style.display   = 'none';
     document.getElementById('successSc').style.display = 'block';
     document.getElementById('pg').style.width = '100%';
     document.getElementById('successMeta').textContent =
-      'تم التسجيل بتاريخ: ' + new Date().toLocaleDateString('ar-SA') +
-      ' — ' + payload.branch;
-    window.scrollTo({top:0,behavior:'smooth'});
+      'تم التسجيل بتاريخ: ' + dateTime + ' — ' + payload.branch;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   })
   .catch(function() {
     document.getElementById('overlay').classList.remove('show');
     document.getElementById('submitBtn').disabled = false;
     document.getElementById('errBanner').style.display = 'block';
-    document.getElementById('errBanner').scrollIntoView({behavior:'smooth',block:'center'});
+    document.getElementById('errBanner').scrollIntoView({ behavior: 'smooth', block: 'center' });
   });
 });
 </script>
