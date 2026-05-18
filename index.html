@@ -293,7 +293,7 @@ function updatePg() {
   var p   = document.getElementById('pledgeCb').checked ? 1 : 0;
   document.getElementById('pg').style.width = Math.round((n+p)/(ids.length+1)*100) + '%';
 }
-['fname','phone','branch','sig'].forEach(function(id) {
+['fname','phone','sig'].forEach(function(id) {
   document.getElementById(id).addEventListener('input', updatePg);
   document.getElementById(id).addEventListener('change', updatePg);
 });
