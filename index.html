@@ -345,12 +345,22 @@ document.getElementById('kForm').addEventListener('submit', function(e) {
   document.getElementById('overlay').classList.add('show');
   document.getElementById('submitBtn').disabled = true;
 
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    mode:   'no-cors',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(payload)
-  })
+fetch(SCRIPT_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(payload)
+})
+.then(response => response.json())
+.then(data => {
+  console.log(data);
+  alert("تم الإرسال بنجاح");
+})
+.catch(error => {
+  console.error(error);
+  alert("حدث خطأ");
+});
   .then(function() {
     // no-cors → نفترض النجاح إذا وصل الطلب
     document.getElementById('overlay').classList.remove('show');
